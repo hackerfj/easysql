@@ -1,12 +1,12 @@
 package easysql
 
-func (db *DB) getRows(sql string, param ...interface{}) ([]map[string]interface{}, error) {
+func (db *DB) GetRows(sql string, param ...interface{}) ([]map[string]interface{}, error) {
 	sql = conversion(sql, param...)
 	rs, err := stmtQueryRows(sql, db, param...)
 	return rs, err
 }
 
-func (db *DB) getRow(sql string, param ...interface{}) (map[string]interface{}, error) {
+func (db *DB) GetRow(sql string, param ...interface{}) (map[string]interface{}, error) {
 	sql = conversion(sql, param...)
 	rs, err := stmtQueryRow(db, sql, param...)
 	return rs, err

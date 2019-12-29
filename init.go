@@ -12,13 +12,19 @@ type DB struct {
 }
 
 //Open 初始化创建连接
-func Open(driverName string, username string, password string, ip string, port string, dbName string) *DB {
+func Open(driverName string, username string, password string, ip string, port string, dbName string) (*DB, error) {
 	db, err := sql.Open(driverName, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, ip, port, dbName))
-	check(err)
+	if err != nil {
+		check(err)
+		return nil, err
+	}
 	//defer db.Close()
 	err = db.Ping()
-	check(err)
-	return &DB{db}
+	if err != nil {
+		check(err)
+		return nil, err
+	}
+	return &DB{db}, nil
 }
 
 //SetMaxIdleConn 设置连接池中的最大闲置连接数。
