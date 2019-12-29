@@ -12,3 +12,5 @@ notifications:
       - 43413875@qq.com
     on_success: change
     on_failure: always
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 7876afa3-e4db-4d94-970b-906a45a94b97
