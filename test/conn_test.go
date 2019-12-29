@@ -1,8 +1,8 @@
 package test
 
 import (
+	"easysql"
 	"fmt"
-	"roamsoft/easysql"
 	"testing"
 	"time"
 )

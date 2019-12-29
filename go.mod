@@ -1,4 +1,4 @@
-module roamsoft/easysql
+module easysql
 
 go 1.13
 
