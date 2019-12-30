@@ -21,5 +21,5 @@ func TestConn(t *testing.T) {
 	db.GetRows("select * from goods")
 	db.Insert("INSERT INTO goods (`name`,`price`) VALUES ('飞行棋',99.99)")
 	db.Update("UPDATE goods SET `name`='飞行棋',`price`=99.88 WHERE `id`=10002")
-	//db.Delete("delete form goods where id = 10002")
+	db.Delete("delete form goods where id = 10002")
 }
