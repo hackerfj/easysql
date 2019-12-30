@@ -1,5 +1,6 @@
 language: go
 go:
+  - 1.13.x
   - 1.12.x
   - 1.11.x
   - 1.10.x
@@ -12,5 +13,7 @@ notifications:
       - 43413875@qq.com
     on_success: change
     on_failure: always
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -t 7876afa3-e4db-4d94-970b-906a45a94b97
+services:
+  - mysql
+  before_install:
+    - mysql -e 'CREATE DATABASE flash-sale'
