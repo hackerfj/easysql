@@ -1,7 +1,5 @@
 package easysql
 
-import "fmt"
-
 //Update operation ,return rows affected
 func (db *DB) Update(sql string, args ...interface{}) (int64, error) {
 	sql = conversion(sql, args...)
@@ -21,7 +19,6 @@ func (db *DB) Delete(sql string, args ...interface{}) (int64, error) {
 }
 
 func stmtExec(sql string, db *DB, qtype int) (int64, error) {
-	fmt.Println(sql)
 	stmt, err := db.conn.Prepare(sql)
 	check(err)
 	if err != nil {

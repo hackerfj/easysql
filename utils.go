@@ -21,6 +21,7 @@ const (
 )
 
 func conversion(query string, param ...interface{}) string {
+	fmt.Println(query)
 	if param == nil {
 		return query
 	}
