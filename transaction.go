@@ -16,7 +16,7 @@ func (db *DB) Begin() (*TxDB, error) {
 	var err error
 	txConn := &TxDB{}
 	txConn.tx, err = db.conn.Begin()
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (mdb *DB) BeginWithIsol(isolLevel sql.IsolationLevel, readOnly bool) (*TxDB
 		Isolation: isolLevel,
 		ReadOnly:  readOnly,
 	})
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -52,11 +52,11 @@ func (mdb *DB) BeginWithIsol(isolLevel sql.IsolationLevel, readOnly bool) (*TxDB
 func (txConn *TxDB) Commit() error {
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
-		check(err)
+		showError(err)
 		return err
 	}
 	err := txConn.tx.Commit()
-	check(err)
+	showError(err)
 	if err != nil {
 		return err
 	}
@@ -67,11 +67,11 @@ func (txConn *TxDB) Commit() error {
 func (txConn *TxDB) Rollback() error {
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
-		check(err)
+		showError(err)
 		return err
 	}
 	err := txConn.tx.Rollback()
-	check(err)
+	showError(err)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func stmtExecTx(query string, txDb *TxDB, qtype int, args ...interface{}) (int64
 	}
 	defer stmt.Close()
 	rs, err := stmt.Exec(args...)
-	check(err)
+	showError(err)
 	if err != nil {
 		return 0, err
 	}
@@ -100,31 +100,27 @@ func stmtExecTx(query string, txDb *TxDB, qtype int, args ...interface{}) (int64
 	} else if qtype == update || qtype == delete {
 		result, err2 = rs.RowsAffected()
 	}
-	check(err2)
+	showError(err2)
 	return result, err2
 }
 
 //Update Update operation
 func (txConn *TxDB) Update(query string, args ...interface{}) (int64, error) {
-	query = conversion(query, args...)
 	return stmtExecTx(query, txConn, update, args...)
 }
 
 //Insert Insert operation
 func (txConn *TxDB) Insert(query string, args ...interface{}) (int64, error) {
-	query = conversion(query, args...)
 	return stmtExecTx(query, txConn, insert, args...)
 }
 
 //Delete Delete operation
 func (txConn *TxDB) Delete(query string, args ...interface{}) (int64, error) {
-	query = conversion(query, args...)
 	return stmtExecTx(query, txConn, delete, args...)
 }
 
 // GetVal get single value by transaction
 func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, error) {
-	query = conversion(query, args...)
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
 		return nil, err
@@ -134,7 +130,7 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 		return nil, err
 	}
 	var err2 error
-	check(err2)
+	showError(err2)
 	row := stmt.QueryRow(args...)
 	var value interface{}
 	err2 = row.Scan(&value)
@@ -147,7 +143,6 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 
 // GetRow get single row data by transaction
 func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interface{}, error) {
-	query = conversion(query, args...)
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
 		return nil, err
@@ -159,7 +154,7 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
 	if err != nil {
-		check(err)
+		showError(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -175,7 +170,7 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 	var result = make(map[string]interface{})
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		check(err)
+		showError(err)
 		for k, column := range columnName {
 			if column != nil {
 				str, isOK := column.([]byte)
@@ -195,7 +190,6 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 
 // GetResults get multiple rows data by transaction
 func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]interface{}, error) {
-	query = conversion(query, args...)
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
 		return nil, err
@@ -206,13 +200,13 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +219,7 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 	var result = make([]map[string]interface{}, 0)
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		check(err)
+		showError(err)
 		row := make(map[string]interface{})
 		for k, column := range columnName {
 			if column != nil {

@@ -15,13 +15,13 @@ type DB struct {
 func Open(driverName string, username string, password string, ip string, port string, dbName string) (*DB, error) {
 	db, err := sql.Open(driverName, fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", username, password, ip, port, dbName))
 	if err != nil {
-		check(err)
+		showError(err)
 		return nil, err
 	}
 	//defer db.Close()
 	err = db.Ping()
 	if err != nil {
-		check(err)
+		showError(err)
 		return nil, err
 	}
 	return &DB{db}, nil

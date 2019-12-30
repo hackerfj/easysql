@@ -5,26 +5,28 @@ import (
 )
 
 func (db *DB) GetRows(sql string, param ...interface{}) ([]map[string]interface{}, error) {
-	sql = conversion(sql, param...)
 	rs, err := stmtQueryRows(sql, db, param...)
 	return rs, err
 }
 
 func (db *DB) GetRow(sql string, param ...interface{}) (map[string]interface{}, error) {
-	sql = conversion(sql, param...)
 	rs, err := stmtQueryRow(db, sql, param...)
 	return rs, err
 }
 
 func (db *DB) Exec(sql string, param ...interface{}) (sql.Result, error) {
-	sql = conversion(sql, param...)
-	rs, err := db.conn.Exec(sql)
+	stmt, err := db.conn.Prepare(sql)
+	showError(err)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rs, err := stmt.Exec(param...)
 	return rs, err
 }
 
 //GetVal get single value
 func (db *DB) GetVal(sql string, param ...interface{}) (interface{}, error) {
-	sql = conversion(sql, param...)
 	value, err := getValByStmt(db, sql, param...)
 	b, ok := value.([]byte)
 	if ok {
@@ -35,13 +37,13 @@ func (db *DB) GetVal(sql string, param ...interface{}) (interface{}, error) {
 
 func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]interface{}, err error) {
 	stmt, err := db.conn.Prepare(sql)
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(param...)
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]in
 
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		check(err)
+		showError(err)
 		row := make(map[string]interface{})
 		for k, column := range columnName {
 			if column != nil {
@@ -79,19 +81,19 @@ func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]in
 		}
 		result = append(result, row)
 	}
-	showLog(sql, len(param), columns, result, int64(len(result)))
+	showLog(sql, columns, result, int64(len(result)), param)
 	return result, nil
 }
 
 func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]interface{}, err error) {
 	stmt, err := db.conn.Prepare(sql)
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(param...)
-	check(err)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +115,7 @@ func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]inter
 
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		check(err)
+		showError(err)
 		for k, column := range columnName {
 			if column != nil {
 				str, isOK := column.([]byte)
@@ -128,13 +130,13 @@ func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]inter
 		}
 		break
 	}
-	showLog(sql, len(param), columns, result, 1)
+	showLog(sql, columns, result, 1, param)
 	return result, nil
 }
 
 func getValByStmt(db *DB, sql string, param ...interface{}) (interface{}, error) {
 	stmt, err := db.conn.Prepare(sql)
-	check(err)
+	showError(err)
 	if err != nil {
 		return "", nil
 	}
@@ -142,6 +144,6 @@ func getValByStmt(db *DB, sql string, param ...interface{}) (interface{}, error)
 	row := stmt.QueryRow(param...)
 	var value interface{}
 	err2 := row.Scan(&value)
-	check(err2)
+	showError(err2)
 	return value, err2
 }
