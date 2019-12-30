@@ -21,11 +21,7 @@ func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
 		return
 	}
 	keys := strings.TrimPrefix(strings.Join(getMapKeys(params[0]), ","), ",")
-	var values string
-	for i := range params {
-		values = fmt.Sprintf("%v,%v", values, getMapValues(params[i]))
-	}
-	sql := fmt.Sprintf("insert into %s (%s) values %s", tableName, keys, strings.TrimPrefix(values, ","))
+	sql := fmt.Sprintf("insert into %s (%s) values %s", tableName, keys, strings.TrimPrefix(getMapValues(params), ","))
 	db.Insert(sql)
 }
 
@@ -61,21 +57,25 @@ func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
 func getMapKeys(m map[string]interface{}) []string {
 	// 数组默认长度为map长度,后面append时,不需要重新申请内存和拷贝,效率较高
 	keys := make([]string, 0, len(m))
-	for k := range m {
+	sortedMap(m, func(k string, v interface{}) {
 		keys = append(keys, k)
-	}
+	})
 	return keys
 }
 
-func getMapValues(m map[string]interface{}) string {
-	var keys string
-	for k := range m {
-		switch m[k].(type) {
-		case string:
-			keys = fmt.Sprintf("%v,'%v'", keys, m[k])
-		default:
-			keys = fmt.Sprintf("%v,%v", keys, m[k])
-		}
+func getMapValues(m []map[string]interface{}) string {
+	var values string
+	for i := range m {
+		var key string
+		sortedMap(m[i], func(k string, v interface{}) {
+			switch v.(type) {
+			case string:
+				key = fmt.Sprintf("%v,'%v'", key, v)
+			default:
+				key = fmt.Sprintf("%v,%v", key, v)
+			}
+		})
+		values = fmt.Sprintf("%v,%v", values, "("+strings.TrimPrefix(key, ",")+")")
 	}
-	return "(" + strings.TrimPrefix(keys, ",") + ")"
+	return strings.TrimPrefix(values, ",")
 }

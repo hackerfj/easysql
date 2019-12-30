@@ -3,6 +3,7 @@ package easysql
 import (
 	"fmt"
 	"log"
+	"sort"
 )
 
 var (
@@ -35,5 +36,19 @@ func showLog(sql string, columns []string, rows interface{}, total int64, param 
 		log.Println(fmt.Sprintf("===> ROW: %v", rows))
 		log.Println(fmt.Sprintf("===> TOTAL: %d", total))
 		log.Println("========================================================================================================")
+	}
+}
+
+/**
+ * map序列化
+ */
+func sortedMap(m map[string]interface{}, f func(k string, v interface{})) {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		f(k, m[k])
 	}
 }
