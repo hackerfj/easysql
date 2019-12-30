@@ -126,19 +126,17 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 		return nil, err
 	}
 	stmt, err := txConn.tx.Prepare(query)
+	showError(err)
 	if err != nil {
 		return nil, err
 	}
-	var err2 error
-	showError(err2)
-	row := stmt.QueryRow(args...)
 	var value interface{}
-	err2 = row.Scan(&value)
+	err = stmt.QueryRow(args...).Scan(&value)
 	b, ok := value.([]byte)
 	if ok {
 		value = string(b)
 	}
-	return value, err2
+	return value, err
 }
 
 // GetRow get single row data by transaction

@@ -2,24 +2,39 @@ package easysql
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 )
 
 //Update operation ,return rows affected
 func (db *DB) Update(query string, args ...interface{}) (int64, error) {
-	return stmtExec(query, db, update, args...)
+	return exec(query, db, update, args...)
 }
 
 //Insert operation ,return new insert id
 func (db *DB) Insert(query string, args ...interface{}) (int64, error) {
-	return stmtExec(query, db, insert, args...)
+	return exec(query, db, insert, args...)
+}
+
+func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
+	if len(params) == 0 {
+		return
+	}
+	keys := strings.TrimPrefix(strings.Join(getMapKeys(params[0]), ","), ",")
+	var values string
+	for i := range params {
+		values = fmt.Sprintf("%v,%v", values, getMapValues(params[i]))
+	}
+	sql := fmt.Sprintf("insert into %s (%s) values %s", tableName, keys, strings.TrimPrefix(values, ","))
+	db.Insert(sql)
 }
 
 //Delete operation ,return rows affected
 func (db *DB) Delete(query string, args ...interface{}) (int64, error) {
-	return stmtExec(query, db, delete, args...)
+	return exec(query, db, delete, args...)
 }
 
-func stmtExec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
+func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
 	stmt, err := db.conn.Prepare(query)
 	showError(err)
 	if err != nil {
@@ -41,4 +56,26 @@ func stmtExec(query string, db *DB, qtype int, args ...interface{}) (int64, erro
 	showError(err)
 	showLog(query, nil, nil, 1, args)
 	return result, err
+}
+
+func getMapKeys(m map[string]interface{}) []string {
+	// 数组默认长度为map长度,后面append时,不需要重新申请内存和拷贝,效率较高
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func getMapValues(m map[string]interface{}) string {
+	var keys string
+	for k := range m {
+		switch m[k].(type) {
+		case string:
+			keys = fmt.Sprintf("%v,'%v'", keys, m[k])
+		default:
+			keys = fmt.Sprintf("%v,%v", keys, m[k])
+		}
+	}
+	return "(" + strings.TrimPrefix(keys, ",") + ")"
 }
