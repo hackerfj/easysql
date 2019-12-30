@@ -2,7 +2,6 @@ package easysql
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 func (db *DB) GetRows(sql string, param ...interface{}) ([]map[string]interface{}, error) {
@@ -20,7 +19,6 @@ func (db *DB) GetRow(sql string, param ...interface{}) (map[string]interface{}, 
 func (db *DB) Exec(sql string, param ...interface{}) (sql.Result, error) {
 	sql = conversion(sql, param...)
 	rs, err := db.conn.Exec(sql)
-	fmt.Println(rs)
 	return rs, err
 }
 
