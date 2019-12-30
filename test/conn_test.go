@@ -9,7 +9,7 @@ import (
 )
 
 func TestConn(t *testing.T) {
-	db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "flash-sale")
+	db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "test")
 	if err != nil {
 		fmt.Println(err)
 	}
