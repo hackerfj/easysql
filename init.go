@@ -29,17 +29,17 @@ func Open(driverName string, username string, password string, ip string, port s
 
 //SetMaxIdleConn 设置连接池中的最大闲置连接数。
 func (db *DB) SetMaxIdleConn(n int) {
-	db.SetMaxIdleConn(n)
+	db.conn.SetMaxIdleConns(n)
 }
 
 //SetMaxOpenConn 设置数据库的最大连接数量。
 func (db *DB) SetMaxOpenConn(n int) {
-	db.SetMaxOpenConn(n)
+	db.conn.SetMaxOpenConns(n)
 }
 
 //SetConnMaxLifetime 设置连接的最大可复用时间。
 func (db *DB) SetConnMaxLifetime(d time.Duration) {
-	db.SetConnMaxLifetime(d)
+	db.conn.SetConnMaxLifetime(d)
 }
 
 //SetDeBUG 设置是否开启DEBUG模式
