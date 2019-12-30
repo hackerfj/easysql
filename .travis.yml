@@ -15,5 +15,5 @@ notifications:
     on_failure: always
 services:
   - mysql
-  before_install:
-    - mysql -e 'CREATE DATABASE flash-sale'
+before_install:
+  - mysql -e 'CREATE DATABASE flash-sale'
