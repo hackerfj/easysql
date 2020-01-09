@@ -6,6 +6,7 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"time"
 )
 
 var (
@@ -30,15 +31,26 @@ func showError(err error) {
 }
 
 // 打印SQL日志
-func showLog(sql string, columns []string, rows interface{}, total int64, param ...interface{}) {
+func showLog(sql string, name string, startTime int64, total int, err error, param ...interface{}) {
 	if isDebug {
-		log.Println("========================================================================================================")
-		log.Println("===> SQL: " + sql)
-		log.Printf("===> PARAMETER: %v", param...)
-		log.Println(fmt.Sprintf("===> COLUMNS: %s", columns))
-		log.Println(fmt.Sprintf("===> ROW: %v", rows))
-		log.Println(fmt.Sprintf("===> TOTAL: %d", total))
-		log.Println("========================================================================================================")
+		endTime := time.Now().UnixNano()
+		strArr := strings.Split(sql, "\n")
+		log.Println("┏━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ DEBUG [", name, "] ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━")
+		if len(strArr) > 1 {
+			v := fmt.Sprintf("%v ┣ \t\t\t", time.Now().Format("2006-01-02 15:04:05"))
+			sql = strings.Replace(sql, strArr[len(strArr)-1], "\t"+strArr[len(strArr)-1], -1)
+			log.Println("┣ SQL：", strings.Replace(sql, "\t", v, -1))
+		} else {
+			log.Println("┣ SQL：", sql)
+		}
+		log.Printf("┣ 参数：%v", strings.Replace(strings.Trim(fmt.Sprint(param...), "[]"), " ", " , ", -1))
+		log.Println("┣ 时间：", float64((endTime-startTime)/1e6), "ms")
+		log.Println("┣ 条数：", total, "条")
+		log.Println("┗━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ DEBUG [", name, "] ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━")
+	}
+	// 检查错误
+	if err != nil {
+		log.Fatalln(err)
 	}
 }
 

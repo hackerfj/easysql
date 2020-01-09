@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 //Update operation ,return rows affected
@@ -12,7 +13,7 @@ func (db *DB) Update(query string, args ...interface{}) (int64, error) {
 	if strings.Compare(db.sql[query], "") == 0 {
 		return 0, errors.New("没有找到该SQL语句！")
 	}
-	return exec(db.sql[query], db, update, args...)
+	return exec(query, db, update, args...)
 }
 
 //Insert operation ,return new insert id
@@ -20,7 +21,7 @@ func (db *DB) Insert(query string, args ...interface{}) (int64, error) {
 	if strings.Compare(db.sql[query], "") == 0 {
 		return 0, errors.New("没有找到该SQL语句！")
 	}
-	return exec(db.sql[query], db, insert, args...)
+	return exec(query, db, insert, args...)
 }
 
 func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
@@ -37,20 +38,22 @@ func (db *DB) Delete(query string, args ...interface{}) (int64, error) {
 	if strings.Compare(db.sql[query], "") == 0 {
 		return 0, errors.New("没有找到该SQL语句！")
 	}
-	return exec(db.sql[query], db, delete, args...)
+	return exec(query, db, delete, args...)
 }
 
 func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
-	stmt, err := db.conn.Prepare(query)
-	showError(err)
+	q := db.sql[query]
+	startTime := time.Now().UnixNano()
+	stmt, err := db.conn.Prepare(q)
 	if err != nil {
+		showLog(q, query, startTime, 0, err, args)
 		return 0, err
 	}
 	defer stmt.Close()
 	var rs sql.Result
 	rs, err = stmt.Exec(args...)
-	showError(err)
 	if err != nil {
+		showLog(q, query, startTime, 0, err, args)
 		return 0, err
 	}
 	var result int64
@@ -59,8 +62,7 @@ func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
 	} else if qtype == update || qtype == delete {
 		result, err = rs.RowsAffected()
 	}
-	showError(err)
-	showLog(query, nil, nil, 1, args)
+	showLog(q, query, startTime, int(result), err, args)
 	return result, err
 }
 

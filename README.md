@@ -4,7 +4,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
 ## EasySQL
-> Golang还可以的ORM库,旨在对开发人员友好、轻量、灵活、快捷。
+> Golang贼好用的ORM库,旨在对开发人员友好、轻量、灵活、快捷。
 
 #### 作者（Support）
 - [JimYJ](https://github.com/JimYJ)

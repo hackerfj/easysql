@@ -8,7 +8,8 @@ import (
 
 // TxDB tx obj
 type TxDB struct {
-	tx *sql.Tx
+	tx  *sql.Tx
+	sql map[string]string
 }
 
 //Begin transaction begin with default isolation level is dependent
@@ -16,6 +17,7 @@ func (db *DB) Begin() (*TxDB, error) {
 	var err error
 	txConn := &TxDB{}
 	txConn.tx, err = db.conn.Begin()
+	txConn.sql = db.sql
 	showError(err)
 	if err != nil {
 		return nil, err
@@ -106,17 +108,17 @@ func stmtExecTx(query string, txDb *TxDB, qtype int, args ...interface{}) (int64
 
 //Update Update operation
 func (txConn *TxDB) Update(query string, args ...interface{}) (int64, error) {
-	return stmtExecTx(query, txConn, update, args...)
+	return stmtExecTx(txConn.sql[query], txConn, update, args...)
 }
 
 //Insert Insert operation
 func (txConn *TxDB) Insert(query string, args ...interface{}) (int64, error) {
-	return stmtExecTx(query, txConn, insert, args...)
+	return stmtExecTx(txConn.sql[query], txConn, insert, args...)
 }
 
 //Delete Delete operation
 func (txConn *TxDB) Delete(query string, args ...interface{}) (int64, error) {
-	return stmtExecTx(query, txConn, delete, args...)
+	return stmtExecTx(txConn.sql[query], txConn, delete, args...)
 }
 
 // GetVal get single value by transaction
@@ -125,7 +127,7 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 		err := errors.New(errorTxInit)
 		return nil, err
 	}
-	stmt, err := txConn.tx.Prepare(query)
+	stmt, err := txConn.tx.Prepare(txConn.sql[query])
 	showError(err)
 	if err != nil {
 		return nil, err
@@ -145,7 +147,7 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 		err := errors.New(errorTxInit)
 		return nil, err
 	}
-	stmt, err := txConn.tx.Prepare(query)
+	stmt, err := txConn.tx.Prepare(txConn.sql[query])
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +194,7 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 		err := errors.New(errorTxInit)
 		return nil, err
 	}
-	stmt, err := txConn.tx.Prepare(query)
+	stmt, err := txConn.tx.Prepare(txConn.sql[query])
 	if err != nil {
 		return nil, err
 	}

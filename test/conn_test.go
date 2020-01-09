@@ -9,14 +9,14 @@ import (
 )
 
 func TestConnMysql(t *testing.T) {
-	db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "test")
+	db, err := easysql.Open("mysql", "root", "669988", "106.12.43.55", "3306", "test")
 	if err != nil {
 		fmt.Println(err)
 	}
+	db.SetSQLPath("preview.md")
 	db.RefreshSQL()
 	db.AutoRefreshSQL()
 	db.SetDeBUG(true)
-	db.SetSQLPath("preview.md")
 	db.SetMaxIdleConn(10)
 	db.SetMaxOpenConn(10)
 	db.SetConnMaxLifetime(10 * time.Second)

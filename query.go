@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 )
 
 func (db *DB) GetRows(name string, param ...interface{}) ([]map[string]interface{}, error) {
 	if strings.Compare(db.sql[name], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
-	rs, err := stmtQueryRows(db.sql[name], db, param...)
+	rs, err := stmtQueryRows(name, db, param...)
 	return rs, err
 }
 
@@ -18,21 +19,23 @@ func (db *DB) GetRow(name string, param ...interface{}) (map[string]interface{},
 	if strings.Compare(db.sql[name], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
-	rs, err := stmtQueryRow(db, db.sql[name], param...)
+	rs, err := stmtQueryRow(name, db, param...)
 	return rs, err
 }
 
 func (db *DB) Exec(name string, param ...interface{}) (sql.Result, error) {
+	startTime := time.Now().UnixNano()
 	if strings.Compare(db.sql[name], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
 	stmt, err := db.conn.Prepare(db.sql[name])
-	showError(err)
 	if err != nil {
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 	defer stmt.Close()
 	rs, err := stmt.Exec(param...)
+	showLog(db.sql[name], name, startTime, 0, err, param)
 	return rs, err
 }
 
@@ -40,7 +43,7 @@ func (db *DB) GetVal(name string, param ...interface{}) (interface{}, error) {
 	if strings.Compare(db.sql[name], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
-	value, err := getValByStmt(db, db.sql[name], param...)
+	value, err := getValByStmt(db, name, param...)
 	b, ok := value.([]byte)
 	if ok {
 		value = string(b)
@@ -48,16 +51,19 @@ func (db *DB) GetVal(name string, param ...interface{}) (interface{}, error) {
 	return value, err
 }
 
-func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]interface{}, err error) {
-	stmt, err := db.conn.Prepare(sql)
+func stmtQueryRows(name string, db *DB, param ...interface{}) (rs []map[string]interface{}, err error) {
+
+	startTime := time.Now().UnixNano()
+
+	stmt, err := db.conn.Prepare(db.sql[name])
 	if err != nil {
-		showError(err)
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(param...)
 	if err != nil {
-		showError(err)
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 
@@ -65,7 +71,7 @@ func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]in
 
 	columns, err := rows.Columns()
 	if err != nil {
-		showError(err)
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 
@@ -81,7 +87,10 @@ func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]in
 
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		showError(err)
+		if err != nil {
+			showLog(db.sql[name], name, startTime, 0, err, param)
+			return nil, err
+		}
 		row := make(map[string]interface{})
 		for k, column := range columnName {
 			if column != nil {
@@ -97,26 +106,30 @@ func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]in
 		}
 		result = append(result, row)
 	}
-	showLog(sql, columns, result, int64(len(result)), param)
+	showLog(db.sql[name], name, startTime, len(result), err, param)
 	return result, nil
 }
 
-func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]interface{}, err error) {
-	stmt, err := db.conn.Prepare(sql)
-	showError(err)
+func stmtQueryRow(name string, db *DB, param ...interface{}) (rs map[string]interface{}, err error) {
+
+	startTime := time.Now().UnixNano()
+
+	stmt, err := db.conn.Prepare(db.sql[name])
 	if err != nil {
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(param...)
-	showError(err)
 	if err != nil {
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return nil, err
 	}
 
@@ -131,7 +144,9 @@ func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]inter
 
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		showError(err)
+		if err != nil {
+			showLog(db.sql[name], name, startTime, 0, err, param)
+		}
 		for k, column := range columnName {
 			if column != nil {
 				str, isOK := column.([]byte)
@@ -146,14 +161,17 @@ func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]inter
 		}
 		break
 	}
-	showLog(sql, columns, result, 1, param)
+	showLog(db.sql[name], name, startTime, 1, err, param)
 	return result, nil
 }
 
-func getValByStmt(db *DB, sql string, param ...interface{}) (interface{}, error) {
-	stmt, err := db.conn.Prepare(sql)
+func getValByStmt(db *DB, name string, param ...interface{}) (interface{}, error) {
+
+	startTime := time.Now().UnixNano()
+
+	stmt, err := db.conn.Prepare(db.sql[name])
 	if err != nil {
-		showError(err)
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return "", err
 	}
 
@@ -163,8 +181,9 @@ func getValByStmt(db *DB, sql string, param ...interface{}) (interface{}, error)
 	var value interface{}
 	err = row.Scan(&value)
 	if err != nil {
-		showError(err)
+		showLog(db.sql[name], name, startTime, 0, err, param)
 		return "", err
 	}
+	showLog(db.sql[name], name, startTime, 1, err, param)
 	return value, err
 }
