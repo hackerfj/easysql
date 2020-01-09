@@ -6,6 +6,7 @@ import (
 	"time"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/hackerfj/easysql"
+	"gopkg.in/russross/blackfriday.v2"
 )
 
 func TestConnMysql(t *testing.T) {
@@ -50,4 +51,9 @@ func TestConnMysql(t *testing.T) {
 		return
 	}
 	tx.Commit()
+}
+
+func TestMarkDown(t *testing.T) {
+	fileread,_ := ioutil.ReadFile("preview.md")
+	fmt.Println(string(blackfriday.Run([]byte(fileread))))
 }
