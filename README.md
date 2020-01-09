@@ -6,7 +6,7 @@
 ## EasySQL
 > Golang还可以的ORM库,旨在对开发人员友好、轻量、灵活、快捷。
 
-#### 作者（Supper）
+#### 作者（Support）
 - [JimYJ](https://github.com/JimYJ)
 - [HackerFJ](https://github.com/hackerfj)
 
