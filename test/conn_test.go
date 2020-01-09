@@ -52,9 +52,13 @@ func TestConnMysql(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	goodsCount, err := db.GetVal("getCount")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(goodsCount)
 
 	fmt.Println("====================transaction========================")
-
 	tx, _ := db.Begin()
 	row, _ := tx.GetRow("select * from goods where stock > 0 and id = ?  for update", 1)
 	if len(row) == 0 {

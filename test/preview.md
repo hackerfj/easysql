@@ -33,3 +33,7 @@ select * from goods
 ```sql
 delete from goods where id = ?
 ```
+#### getCount
+```sql
+select count(id)as goodsCount from goods
+```

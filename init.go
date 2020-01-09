@@ -58,7 +58,7 @@ func (db *DB) SetSQLPath(filePath string) {
 	db.filePath = filePath
 }
 
-//ReloadSQL 手动刷新SQL-无需重启服务
+//RefreshSQL 手动刷新SQL-无需重启服务
 func (db *DB) RefreshSQL() {
 	if strings.Compare(db.filePath, "") == 0 {
 		fmt.Println("未设置文件访问路径...")
