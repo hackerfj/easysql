@@ -9,9 +9,6 @@
 #### 作者
 - HackerFJ
 
-#### 详细文档
-- 详细使用文档请移步至[EasySQL官方文档](http://easysql.hackerfj.com)查看
-
 #### 概况
 - 灵活性极强
 - 日志友好
@@ -21,13 +18,18 @@
 - 可扩展性
 - 数据库事物
 
+#### 更新日志
+- V0.0.2 增加SQL统一管理
+
+- V0.0.1 增加SQL打印输出
+
 #### 安装
 ```shell
 go get -u github.com/hackerfj/easysql
 ```
 
-#### 更新日志
-- V0.0.2 增加SQL统一管理
+#### 详细文档
+- 详细使用文档请移步至[EasySQL官方文档](http://easysql.hackerfj.com)查看
 
-- V0.0.1 增加SQL打印输出
+
 
