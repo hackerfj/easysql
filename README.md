@@ -3,19 +3,19 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/135a38e0c6d344c6ac7db0b11c864a68)](https://www.codacy.com/manual/hackerfj/easysql?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hackerfj/easysql&amp;utm_campaign=Badge_Grade)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
-#### EasySQL 文档
+## EasySQL 文档
 
-Golang还可以的ORM库,旨在对开发人员友好、轻量、灵活、快捷。
+> Golang还可以的ORM库,旨在对开发人员友好、轻量、灵活、快捷。
 
-作者
+#### 作者
 
 - HackerFJ
 
-详细文档
+#### 详细文档
 
 - 详细文档请转移至[EasySQL官方文档](http://easysql.hackerfj.com)查看
 
-概况
+#### 概况
 
 - 灵活性极强
 - 日志友好
@@ -25,15 +25,15 @@ Golang还可以的ORM库,旨在对开发人员友好、轻量、灵活、快捷�
 - 可扩展性
 - 数据库事物
 
-安装
+#### 安装
 
 ```shell
 go get -u github.com/hackerfj/easysql
 ```
 
-更新日志
+#### 更新日志
 
-​	0.0.2 增加SQL统一管理
+- V0.0.2 增加SQL统一管理
 
-​	0.0.1 增加SQL打印输出
+- V0.0.1 增加SQL打印输出
 
