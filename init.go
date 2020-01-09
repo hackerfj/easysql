@@ -28,7 +28,7 @@ func Open(driverName string, username string, password string, ip string, port s
 		showError(err)
 		return nil, err
 	}
-	return &DB{db, nil, nil}, nil
+	return &DB{db, nil, ""}, nil
 }
 
 //SetMaxIdleConn 设置连接池中的最大闲置连接数。

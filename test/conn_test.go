@@ -13,6 +13,8 @@ func TestConnMysql(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	db.RefreshSQL()
+	db.AutoRefreshSQL()
 	db.SetDeBUG(true)
 	db.SetSQLPath("preview.md")
 	db.SetMaxIdleConn(10)
