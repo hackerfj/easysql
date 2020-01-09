@@ -37,24 +37,27 @@ func (db *DB) GetVal(sql string, param ...interface{}) (interface{}, error) {
 
 func stmtQueryRows(sql string, db *DB, param ...interface{}) (rs []map[string]interface{}, err error) {
 	stmt, err := db.conn.Prepare(sql)
-	showError(err)
 	if err != nil {
+		showError(err)
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(param...)
-	showError(err)
 	if err != nil {
+		showError(err)
 		return nil, err
 	}
 
 	defer rows.Close()
+
 	columns, err := rows.Columns()
 	if err != nil {
+		showError(err)
 		return nil, err
 	}
 
 	columnName := make([]interface{}, len(columns))
+
 	colbuff := make([]interface{}, len(columns))
 
 	for i := range colbuff {
@@ -136,14 +139,19 @@ func stmtQueryRow(db *DB, sql string, param ...interface{}) (rs map[string]inter
 
 func getValByStmt(db *DB, sql string, param ...interface{}) (interface{}, error) {
 	stmt, err := db.conn.Prepare(sql)
-	showError(err)
 	if err != nil {
-		return "", nil
+		showError(err)
+		return "", err
 	}
+
 	defer stmt.Close()
+
 	row := stmt.QueryRow(param...)
 	var value interface{}
-	err2 := row.Scan(&value)
-	showError(err2)
-	return value, err2
+	err = row.Scan(&value)
+	if err != nil {
+		showError(err)
+		return "", err
+	}
+	return value, err
 }
