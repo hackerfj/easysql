@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/robfig/cron"
-	"log"
 	"strings"
 	"time"
 )
