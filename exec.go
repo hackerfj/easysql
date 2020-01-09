@@ -2,18 +2,25 @@ package easysql
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 )
 
 //Update operation ,return rows affected
 func (db *DB) Update(query string, args ...interface{}) (int64, error) {
-	return exec(query, db, update, args...)
+	if strings.Compare(db.sql[query], "") == 0 {
+		return 0, errors.New("没有找到该SQL语句！")
+	}
+	return exec(db.sql[query], db, update, args...)
 }
 
 //Insert operation ,return new insert id
 func (db *DB) Insert(query string, args ...interface{}) (int64, error) {
-	return exec(query, db, insert, args...)
+	if strings.Compare(db.sql[query], "") == 0 {
+		return 0, errors.New("没有找到该SQL语句！")
+	}
+	return exec(db.sql[query], db, insert, args...)
 }
 
 func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
@@ -27,7 +34,10 @@ func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
 
 //Delete operation ,return rows affected
 func (db *DB) Delete(query string, args ...interface{}) (int64, error) {
-	return exec(query, db, delete, args...)
+	if strings.Compare(db.sql[query], "") == 0 {
+		return 0, errors.New("没有找到该SQL语句！")
+	}
+	return exec(db.sql[query], db, delete, args...)
 }
 
 func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {

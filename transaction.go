@@ -32,12 +32,12 @@ func (db *DB) Begin() (*TxDB, error) {
 // LevelSnapshot 可读快照
 // LevelSerializable 可串行化
 // LevelLinearizable 可线性化
-func (mdb *DB) BeginWithIsol(isolLevel sql.IsolationLevel, readOnly bool) (*TxDB, error) {
+func (db *DB) BeginWithIsol(isolLevel sql.IsolationLevel, readOnly bool) (*TxDB, error) {
 	// ctx, cancel := context.WithTimeout(context.Background(), 15*time.Millisecond)
 	// defer cancel()
 	var err error
 	txConn := &TxDB{}
-	txConn.tx, err = mdb.conn.BeginTx(context.Background(), &sql.TxOptions{
+	txConn.tx, err = db.conn.BeginTx(context.Background(), &sql.TxOptions{
 		Isolation: isolLevel,
 		ReadOnly:  readOnly,
 	})

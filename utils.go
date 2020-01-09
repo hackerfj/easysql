@@ -2,8 +2,10 @@ package easysql
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"sort"
+	"strings"
 )
 
 var (
@@ -27,6 +29,7 @@ func showError(err error) {
 	}
 }
 
+// 打印SQL日志
 func showLog(sql string, columns []string, rows interface{}, total int64, param ...interface{}) {
 	if isDebug {
 		log.Println("========================================================================================================")
@@ -37,6 +40,31 @@ func showLog(sql string, columns []string, rows interface{}, total int64, param 
 		log.Println(fmt.Sprintf("===> TOTAL: %d", total))
 		log.Println("========================================================================================================")
 	}
+}
+
+func InitSQL(filePath string) (result map[string]string, err error) {
+	fileRead, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		showError(err)
+		return nil, err
+	}
+	md := string(fileRead)
+	startIndex := strings.Index(md, "####")
+	if startIndex == -1 {
+		fmt.Println("您未定义SQL！")
+	}
+
+	sqlJSON := strings.TrimSpace(string(fileRead)[startIndex:len(fileRead)])
+	sqlList := strings.Split(sqlJSON, "####")
+	result = make(map[string]string)
+	for i, v := range sqlList {
+		if i > 0 {
+			key := v[0:strings.Index(v, "`")]
+			value := v[strings.Index(v, "```")+6 : strings.LastIndex(v, "```")]
+			result[strings.TrimSpace(key)] = strings.TrimSpace(value)
+		}
+	}
+	return result, nil
 }
 
 /**

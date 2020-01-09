@@ -2,28 +2,30 @@ package test
 
 import (
 	"fmt"
-	"testing"
-	"time"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/hackerfj/easysql"
-	"gopkg.in/russross/blackfriday.v2"
+	"testing"
+	"time"
 )
 
 func TestConnMysql(t *testing.T) {
-	// db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "test")
-
-	db, err := easysql.Open("mysql", "root", "669988", "106.12.43.55", "3306", "test")
-
+	db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "test")
 	if err != nil {
 		fmt.Println(err)
 	}
 	db.SetDeBUG(true)
+	db.SetSQLPath("preview.md")
 	db.SetMaxIdleConn(10)
 	db.SetMaxOpenConn(10)
 	db.SetConnMaxLifetime(10 * time.Second)
-	db.Exec("CREATE TABLE `goods` (`id` BIGINT (20) NOT NULL AUTO_INCREMENT COMMENT '商品编号',`name` VARCHAR (255) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '商品名称',`cover` VARCHAR (1000) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '封面',`stock` INT (10) DEFAULT NULL COMMENT '库存数量',`price` DECIMAL (10, 2) DEFAULT NULL COMMENT '商品价格',`create_time` datetime DEFAULT NULL COMMENT '创建时间',`update_time` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;")
-	db.Insert("INSERT INTO goods (`name`,`price`) VALUES ('飞行棋',99.99)")
-
+	_, err = db.Exec("createTableGoods")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = db.Insert("addGoods")
+	if err != nil {
+		fmt.Println(err)
+	}
 	db.InsertMany("goods", []map[string]interface{}{
 		{"name": "张三", "price": 88.99},
 		{"name": "里斯", "price": 88.99},
@@ -32,10 +34,22 @@ func TestConnMysql(t *testing.T) {
 		{"name": "孙琦", "price": 88.99},
 	})
 
-	db.Update("UPDATE goods SET `name`='飞行棋',`price`=99.88 WHERE `id`= ?", 10002)
-	db.GetRow("select * from goods limit ?", 1)
-	db.GetRows("select * from goods")
-	db.Delete("delete from goods where id = ?", 10002)
+	_, err = db.Update("updateGoods", 10002)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = db.GetRow("getOne", 1)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = db.GetRows("findAll")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = db.Delete("deleteById", 10002)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println("====================transaction========================")
 
@@ -51,9 +65,4 @@ func TestConnMysql(t *testing.T) {
 		return
 	}
 	tx.Commit()
-}
-
-func TestMarkDown(t *testing.T) {
-	fileread,_ := ioutil.ReadFile("preview.md")
-	fmt.Println(string(blackfriday.Run([]byte(fileread))))
 }

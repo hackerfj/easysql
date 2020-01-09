@@ -2,20 +2,31 @@ package easysql
 
 import (
 	"database/sql"
+	"errors"
+	"strings"
 )
 
-func (db *DB) GetRows(sql string, param ...interface{}) ([]map[string]interface{}, error) {
-	rs, err := stmtQueryRows(sql, db, param...)
+func (db *DB) GetRows(name string, param ...interface{}) ([]map[string]interface{}, error) {
+	if strings.Compare(db.sql[name], "") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
+	rs, err := stmtQueryRows(db.sql[name], db, param...)
 	return rs, err
 }
 
-func (db *DB) GetRow(sql string, param ...interface{}) (map[string]interface{}, error) {
-	rs, err := stmtQueryRow(db, sql, param...)
+func (db *DB) GetRow(name string, param ...interface{}) (map[string]interface{}, error) {
+	if strings.Compare(db.sql[name], "") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
+	rs, err := stmtQueryRow(db, db.sql[name], param...)
 	return rs, err
 }
 
-func (db *DB) Exec(sql string, param ...interface{}) (sql.Result, error) {
-	stmt, err := db.conn.Prepare(sql)
+func (db *DB) Exec(name string, param ...interface{}) (sql.Result, error) {
+	if strings.Compare(db.sql[name], "") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
+	stmt, err := db.conn.Prepare(db.sql[name])
 	showError(err)
 	if err != nil {
 		return nil, err
@@ -25,9 +36,11 @@ func (db *DB) Exec(sql string, param ...interface{}) (sql.Result, error) {
 	return rs, err
 }
 
-//GetVal get single value
-func (db *DB) GetVal(sql string, param ...interface{}) (interface{}, error) {
-	value, err := getValByStmt(db, sql, param...)
+func (db *DB) GetVal(name string, param ...interface{}) (interface{}, error) {
+	if strings.Compare(db.sql[name], "") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
+	value, err := getValByStmt(db, db.sql[name], param...)
 	b, ok := value.([]byte)
 	if ok {
 		value = string(b)
