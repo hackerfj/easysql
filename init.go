@@ -3,13 +3,17 @@ package easysql
 import (
 	"database/sql"
 	"fmt"
+	"github.com/robfig/cron"
+	"log"
+	"strings"
 	"time"
 )
 
 // DB 结构体
 type DB struct {
-	conn *sql.DB
-	sql  map[string]string
+	conn     *sql.DB
+	sql      map[string]string
+	filePath string
 }
 
 //Open 初始化创建连接
@@ -25,7 +29,7 @@ func Open(driverName string, username string, password string, ip string, port s
 		showError(err)
 		return nil, err
 	}
-	return &DB{db, nil}, nil
+	return &DB{db, nil, nil}, nil
 }
 
 //SetMaxIdleConn 设置连接池中的最大闲置连接数。
@@ -52,6 +56,45 @@ func (db *DB) SetDeBUG(b bool) {
 func (db *DB) SetSQLPath(filePath string) {
 	sql, _ := InitSQL(filePath)
 	db.sql = sql
+	db.filePath = filePath
+}
+
+//ReloadSQL 手动刷新SQL-无需重启服务
+func (db *DB) RefreshSQL() {
+	if strings.Compare(db.filePath, "") == 0 {
+		fmt.Println("未设置文件访问路径...")
+	} else {
+		sql, _ := InitSQL(db.filePath)
+		db.sql = sql
+	}
+}
+
+//AutoRefreshSQL 自动刷新SQL-无需重启服务 不建议生产环境启用
+func (db *DB) AutoRefreshSQLCustom(spec string) {
+	if strings.Compare(db.filePath, "") == 0 {
+		fmt.Println("未设置文件访问路径...")
+	} else {
+		c := cron.New()
+		c.AddFunc(spec, func() {
+			sql, _ := InitSQL(db.filePath)
+			db.sql = sql
+		})
+		c.Start()
+	}
+}
+
+//AutoRefreshSQL 自动刷新SQL-无需重启服务 不建议生产环境启用 默认值5S一次
+func (db *DB) AutoRefreshSQL() {
+	if strings.Compare(db.filePath, "") == 0 {
+		fmt.Println("未设置文件访问路径...")
+	} else {
+		c := cron.New()
+		c.AddFunc("*/5 * * * * ?", func() {
+			sql, _ := InitSQL(db.filePath)
+			db.sql = sql
+		})
+		c.Start()
+	}
 }
 
 //Close 关闭连接
