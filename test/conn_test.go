@@ -62,19 +62,14 @@ func TestConnMysql(t *testing.T) {
 	fmt.Println("====================transaction========================")
 	tx, err := db.Begin()
 	row, err := tx.GetRow("txGetInfo", 1)
-	t.Log(row)
-	if err != nil {
-		fmt.Println("错误1：", err)
-	}
 	if len(row) == 0 {
 		tx.Commit()
-		return
+	} else {
+		_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
+		if err != nil {
+			fmt.Println(err)
+			tx.Rollback()
+		}
+		tx.Commit()
 	}
-	_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
-	if err != nil {
-		fmt.Println(err)
-		tx.Rollback()
-		return
-	}
-	tx.Commit()
 }
