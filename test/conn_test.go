@@ -67,9 +67,9 @@ func TestConnMysql(t *testing.T) {
 	} else {
 		_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
 		if err != nil {
-			fmt.Println(err)
 			tx.Rollback()
+		} else {
+			tx.Commit()
 		}
-		tx.Commit()
 	}
 }
