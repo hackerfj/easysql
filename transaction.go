@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strings"
+	"time"
 )
 
 // TxDB tx obj
@@ -82,29 +83,34 @@ func (txConn *TxDB) Rollback() error {
 }
 
 func stmtExecTx(query string, txDb *TxDB, qtype int, args ...interface{}) (int64, error) {
+
+	startTime := time.Now().UnixNano()
+
 	if txDb.tx == nil {
 		err := errors.New(errorTxInit)
+		showLog(txDb.sql[query], query, startTime, 0, err, args)
 		return 0, err
 	}
 	stmt, err := txDb.tx.Prepare(query)
 	if err != nil {
+		showLog(txDb.sql[query], query, startTime, 0, err, args)
 		return 0, err
 	}
 	defer stmt.Close()
 	rs, err := stmt.Exec(args...)
-	showError(err)
 	if err != nil {
+		showLog(txDb.sql[query], query, startTime, 0, err, args)
 		return 0, err
 	}
 	var result int64
-	var err2 error
 	if qtype == insert {
-		result, err2 = rs.LastInsertId()
+		result, err = rs.LastInsertId()
+		showLog(txDb.sql[query], query, startTime, int(result), err, args)
 	} else if qtype == update || qtype == delete {
-		result, err2 = rs.RowsAffected()
+		result, err = rs.RowsAffected()
+		showLog(txDb.sql[query], query, startTime, int(result), err, args)
 	}
-	showError(err2)
-	return result, err2
+	return result, err
 }
 
 //Update Update operation
@@ -124,13 +130,21 @@ func (txConn *TxDB) Delete(query string, args ...interface{}) (int64, error) {
 
 // GetVal get single value by transaction
 func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, error) {
+
+	if strings.Compare(txConn.sql[query], "") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
+
+	startTime := time.Now().UnixNano()
+
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	stmt, err := txConn.tx.Prepare(txConn.sql[query])
-	showError(err)
 	if err != nil {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	var value interface{}
@@ -139,16 +153,21 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 	if ok {
 		value = string(b)
 	}
+	showLog(txConn.sql[query], query, startTime, 1, err, args)
 	return value, err
 }
 
 // GetRow get single row data by transaction
 func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interface{}, error) {
-	if strings.Compare(txConn.sql[query],"") == 0 {
+	if strings.Compare(txConn.sql[query], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
+
+	startTime := time.Now().UnixNano()
+
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	stmt, err := txConn.tx.Prepare(txConn.sql[query])
@@ -158,12 +177,13 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
 	if err != nil {
-		showError(err)
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
 	if err != nil {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	columnName := make([]interface{}, len(columns))
@@ -189,6 +209,7 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 		}
 		break
 	}
+	showLog(txConn.sql[query], query, startTime, 1, err, args)
 	return result, nil
 }
 
@@ -198,20 +219,24 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 		err := errors.New(errorTxInit)
 		return nil, err
 	}
+
+	startTime := time.Now().UnixNano()
+
 	stmt, err := txConn.tx.Prepare(txConn.sql[query])
 	if err != nil {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(args...)
-	showError(err)
 	if err != nil {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	defer rows.Close()
 	columns, err := rows.Columns()
-	showError(err)
 	if err != nil {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
 		return nil, err
 	}
 	/* check custom field end*/
@@ -239,5 +264,6 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 		}
 		result = append(result, row)
 	}
+	showLog(txConn.sql[query], query, startTime, len(result), err, args)
 	return result, nil
 }

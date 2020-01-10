@@ -60,7 +60,6 @@ func TestConnMysql(t *testing.T) {
 	//fmt.Println(goodsCount)
 
 	//fmt.Println("====================transaction========================")
-	t.Log("来了！")
 	tx, err := db.Begin()
 	row, err := tx.GetRow("txGetInfo", 1)
 	t.Log(row)
