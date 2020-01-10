@@ -37,3 +37,7 @@ delete from goods where id = ?
 ```sql
 select count(id)as goodsCount from goods
 ```
+#### txGetInfo
+```sql
+select * from goods where stock > 0 and id = ?  for update
+```

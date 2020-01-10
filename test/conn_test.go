@@ -2,10 +2,11 @@ package test
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/hackerfj/easysql"
 	"testing"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/hackerfj/easysql"
 )
 
 func TestConnMysql(t *testing.T) {
@@ -59,21 +60,22 @@ func TestConnMysql(t *testing.T) {
 	//fmt.Println(goodsCount)
 
 	//fmt.Println("====================transaction========================")
+	t.Log("来了！")
 	tx, err := db.Begin()
-	row, err := tx.GetRow("select * from goods where stock > 0 and id = ?  for update", 1)
+	row, err := tx.GetRow("txGetInfo", 1)
+	t.Log(row)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("错误1：", err)
 	}
 	if len(row) == 0 {
 		tx.Commit()
 		return
 	}
-	fmt.Println(row)
-	_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
-	if err != nil {
-		fmt.Println(err)
-		tx.Rollback()
-		return
-	}
+	// _, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	tx.Rollback()
+	// 	return
+	// }
 	tx.Commit()
 }

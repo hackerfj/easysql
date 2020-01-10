@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 )
 
 // TxDB tx obj
@@ -143,6 +144,9 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 
 // GetRow get single row data by transaction
 func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interface{}, error) {
+	if strings.Compare(txConn.sql[query],"") == 0 {
+		return nil, errors.New("没有找到该SQL语句！")
+	}
 	if txConn.tx == nil {
 		err := errors.New(errorTxInit)
 		return nil, err
