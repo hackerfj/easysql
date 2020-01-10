@@ -194,7 +194,9 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 	var result = make(map[string]interface{})
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		showError(err)
+		if err != nil {
+			showLog(txConn.sql[query], query, startTime, 0, err, args)
+		}
 		for k, column := range columnName {
 			if column != nil {
 				str, isOK := column.([]byte)
@@ -248,7 +250,9 @@ func (txConn *TxDB) GetRows(query string, args ...interface{}) ([]map[string]int
 	var result = make([]map[string]interface{}, 0)
 	for rows.Next() {
 		err := rows.Scan(colbuff...)
-		showError(err)
+		if err != nil {
+			showLog(txConn.sql[query], query, startTime, 0, err, args)
+		}
 		row := make(map[string]interface{})
 		for k, column := range columnName {
 			if column != nil {
