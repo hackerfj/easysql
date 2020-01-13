@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// DB 结构体
 type DB struct {
 	conn     *sql.DB
 	sql      map[string]string

@@ -20,8 +20,8 @@ func (db *DB) Begin() (*TxDB, error) {
 	txConn := &TxDB{}
 	txConn.tx, err = db.conn.Begin()
 	txConn.sql = db.sql
-	showError(err)
 	if err != nil {
+		showError(err)
 		return nil, err
 	}
 	return txConn, nil
@@ -45,8 +45,8 @@ func (db *DB) BeginWithIsol(isolLevel sql.IsolationLevel, readOnly bool) (*TxDB,
 		Isolation: isolLevel,
 		ReadOnly:  readOnly,
 	})
-	showError(err)
 	if err != nil {
+		showError(err)
 		return nil, err
 	}
 	return txConn, nil
@@ -60,8 +60,8 @@ func (txConn *TxDB) Commit() error {
 		return err
 	}
 	err := txConn.tx.Commit()
-	showError(err)
 	if err != nil {
+		showError(err)
 		return err
 	}
 	return nil
@@ -75,8 +75,8 @@ func (txConn *TxDB) Rollback() error {
 		return err
 	}
 	err := txConn.tx.Rollback()
-	showError(err)
 	if err != nil {
+		showError(err)
 		return err
 	}
 	return nil
