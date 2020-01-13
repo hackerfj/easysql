@@ -159,6 +159,7 @@ func (txConn *TxDB) GetVal(query string, args ...interface{}) (interface{}, erro
 
 // GetRow get single row data by transaction
 func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interface{}, error) {
+
 	if strings.Compare(txConn.sql[query], "") == 0 {
 		return nil, errors.New("没有找到该SQL语句！")
 	}
@@ -211,7 +212,11 @@ func (txConn *TxDB) GetRow(query string, args ...interface{}) (map[string]interf
 		}
 		break
 	}
-	showLog(txConn.sql[query], query, startTime, 1, err, args)
+	if len(result) > 0 {
+		showLog(txConn.sql[query], query, startTime, 1, err, args)
+	} else {
+		showLog(txConn.sql[query], query, startTime, 0, err, args)
+	}
 	return result, nil
 }
 

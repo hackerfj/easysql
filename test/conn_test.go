@@ -1,7 +1,7 @@
 package test
 
 import (
-	"fmt"
+	"log"
 	"testing"
 	"time"
 
@@ -12,10 +12,11 @@ import (
 func TestConnMysql(t *testing.T) {
 	db, err := easysql.Open("mysql", "root", "", "127.0.0.1", "3306", "test")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	db.SetSQLPath("preview.md")
 	db.RefreshSQL()
+	db.AutoRefreshSQLCustom("*/5 * * * * ?")
 	db.AutoRefreshSQL()
 	db.SetDeBUG(true)
 	db.SetMaxIdleConn(10)
@@ -23,11 +24,11 @@ func TestConnMysql(t *testing.T) {
 	db.SetConnMaxLifetime(10 * time.Second)
 	_, err = db.Exec("createTableGoods")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	_, err = db.Insert("addGoods")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	db.InsertMany("goods", []map[string]interface{}{
 		{"name": "张三", "price": 88.99},
@@ -39,34 +40,40 @@ func TestConnMysql(t *testing.T) {
 
 	_, err = db.Update("updateGoods", 10002)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	_, err = db.GetRow("getOne", 1)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	_, err = db.GetRows("findAll")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	_, err = db.Delete("deleteById", 10002)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	goodsCount, err := db.GetVal("getCount")
+	_, err = db.GetVal("getCount")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	fmt.Println(goodsCount)
 
-	fmt.Println("====================transaction========================")
 	tx, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+	}
 	row, err := tx.GetRow("txGetInfo", 1)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(row)
 	if len(row) == 0 {
 		tx.Commit()
 	} else {
 		_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
 		if err != nil {
+			log.Println(err)
 			tx.Rollback()
 		} else {
 			tx.Commit()

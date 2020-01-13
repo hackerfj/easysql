@@ -63,7 +63,7 @@ func InitSQL(filePath string) (result map[string]string, err error) {
 	md := string(fileRead)
 	startIndex := strings.Index(md, "####")
 	if startIndex == -1 {
-		fmt.Println("您未定义SQL！")
+		log.Println("您未定义SQL！")
 	}
 
 	sqlJSON := strings.TrimSpace(string(fileRead)[startIndex:len(fileRead)])
@@ -90,5 +90,13 @@ func sortedMap(m map[string]interface{}, f func(k string, v interface{})) {
 	sort.Strings(keys)
 	for _, k := range keys {
 		f(k, m[k])
+	}
+}
+
+func IsEmpty(contrast string, call func(isEmpty bool)) {
+	if strings.Compare(contrast, "") == 0 {
+		call(true)
+	} else {
+		call(false)
 	}
 }

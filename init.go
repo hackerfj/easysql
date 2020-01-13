@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/robfig/cron"
-	"strings"
+	"log"
 	"time"
 )
 
@@ -60,40 +60,46 @@ func (db *DB) SetSQLPath(filePath string) {
 
 //RefreshSQL 手动刷新SQL-无需重启服务
 func (db *DB) RefreshSQL() {
-	if strings.Compare(db.filePath, "") == 0 {
-		fmt.Println("未设置文件访问路径...")
-	} else {
-		sql, _ := InitSQL(db.filePath)
-		db.sql = sql
-	}
+	IsEmpty(db.filePath, func(isEmpty bool) {
+		if isEmpty {
+			log.Println("未设置文件访问路径...")
+		} else {
+			sql, _ := InitSQL(db.filePath)
+			db.sql = sql
+		}
+	})
 }
 
 //AutoRefreshSQL 自动刷新SQL-无需重启服务 不建议生产环境启用
 func (db *DB) AutoRefreshSQLCustom(spec string) {
-	if strings.Compare(db.filePath, "") == 0 {
-		fmt.Println("未设置文件访问路径...")
-	} else {
-		c := cron.New()
-		c.AddFunc(spec, func() {
-			sql, _ := InitSQL(db.filePath)
-			db.sql = sql
-		})
-		c.Start()
-	}
+	IsEmpty(db.filePath, func(isEmpty bool) {
+		if isEmpty {
+			log.Println("未设置文件访问路径...")
+		} else {
+			c := cron.New()
+			c.AddFunc(spec, func() {
+				sql, _ := InitSQL(db.filePath)
+				db.sql = sql
+			})
+			c.Start()
+		}
+	})
 }
 
 //AutoRefreshSQL 自动刷新SQL-无需重启服务 不建议生产环境启用 默认值5S一次
 func (db *DB) AutoRefreshSQL() {
-	if strings.Compare(db.filePath, "") == 0 {
-		fmt.Println("未设置文件访问路径...")
-	} else {
-		c := cron.New()
-		c.AddFunc("*/5 * * * * ?", func() {
-			sql, _ := InitSQL(db.filePath)
-			db.sql = sql
-		})
-		c.Start()
-	}
+	IsEmpty(db.filePath, func(isEmpty bool) {
+		if isEmpty {
+			log.Println("未设置文件访问路径...")
+		} else {
+			c := cron.New()
+			c.AddFunc("*/5 * * * * ?", func() {
+				sql, _ := InitSQL(db.filePath)
+				db.sql = sql
+			})
+			c.Start()
+		}
+	})
 }
 
 //Close 关闭连接
