@@ -71,7 +71,7 @@ func TestConnMysql(t *testing.T) {
 	if len(row) == 0 {
 		tx.Commit()
 	} else {
-		_, err = tx.Update("update goods set stock = ? where id = ?", row["stock"].(int64)-1, row["id"])
+		_, err = tx.Update("txUpdateInfo", row["stock"].(int64)-1, row["id"])
 		if err != nil {
 			log.Println(err)
 			tx.Rollback()

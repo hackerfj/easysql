@@ -41,3 +41,7 @@ select count(id)as goodsCount from goods
 ```sql
 select * from goods where stock > 0 and id = ? for update
 ```
+#### txUpdateInfo
+```sql
+update goods set stock = ? where id = ?
+```
