@@ -31,11 +31,11 @@ func TestConnMysql(t *testing.T) {
 		log.Println(err)
 	}
 	db.InsertMany("goods", []map[string]interface{}{
-		{"name": "张三", "price": 88.99},
-		{"name": "里斯", "price": 88.99},
-		{"name": "王五", "price": 88.99},
-		{"name": "赵六", "price": 88.99},
-		{"name": "孙琦", "price": 88.99},
+		{"name": "张三", "stock": "1", "price": 88.99},
+		{"name": "里斯", "stock": "1", "price": 88.99},
+		{"name": "王五", "stock": "1", "price": 88.99},
+		{"name": "赵六", "stock": "1", "price": 88.99},
+		{"name": "孙琦", "stock": "1", "price": 88.99},
 	})
 
 	_, err = db.Update("updateGoods", 10002)

@@ -30,7 +30,8 @@ func (db *DB) InsertMany(tableName string, params []map[string]interface{}) {
 	}
 	keys := strings.TrimPrefix(strings.Join(getMapKeys(params[0]), ","), ",")
 	sql := fmt.Sprintf("insert into %s (%s) values %s", tableName, keys, strings.TrimPrefix(getMapValues(params), ","))
-	db.Insert(sql)
+	//db.Insert(sql)
+	customExec(sql, db, "insertMany", len(params))
 }
 
 //Delete operation ,return rows affected
@@ -64,6 +65,24 @@ func exec(query string, db *DB, qtype int, args ...interface{}) (int64, error) {
 	}
 	showLog(q, query, startTime, int(result), err, args)
 	return result, err
+}
+
+func customExec(query string, db *DB, queryName string, total int) error {
+	startTime := time.Now().UnixNano()
+	stmt, err := db.conn.Prepare(query)
+	if err != nil {
+		showLog(query, queryName, startTime, 0, err, nil)
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec()
+	if err != nil {
+		showLog(query, queryName, startTime, 0, err, nil)
+		return err
+	}
+	//log.Fatal(rs.LastInsertId())
+	showLog(query, queryName, startTime, total, err, nil)
+	return err
 }
 
 func getMapKeys(m map[string]interface{}) []string {
