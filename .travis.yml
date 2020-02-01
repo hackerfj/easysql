@@ -1,6 +1,6 @@
 language: go
 go:
-  - 1.13
+  - 1.10.x
 install:
   - go get -t -v ./...
 notifications:
