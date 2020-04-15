@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -99,4 +100,12 @@ func IsEmpty(contrast string, call func(isEmpty bool)) {
 	} else {
 		call(false)
 	}
+}
+
+func IsNil(i interface{}) bool {
+	vi := reflect.ValueOf(i)
+	if vi.Kind() == reflect.Ptr {
+		return vi.IsNil()
+	}
+	return false
 }
