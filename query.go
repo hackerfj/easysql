@@ -161,7 +161,7 @@ func stmtQueryRow(name string, db *DB, param ...interface{}) (rs map[string]inte
 		}
 		break
 	}
-	if IsNil(result) {
+	if len(result) == 0 {
 		showLog(db.sql[name], name, startTime, 0, err, param)
 	} else {
 		showLog(db.sql[name], name, startTime, 1, err, param)
