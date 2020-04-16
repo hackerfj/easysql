@@ -34,15 +34,16 @@ func showError(err error) {
 func showLog(sql string, name string, startTime int64, total int, err error, param ...interface{}) {
 	if isDebug {
 		endTime := time.Now().UnixNano()
-		strArr := strings.Split(sql, "\n")
+		//strArr := strings.Split(sql, "\n")
 		log.Println("┏━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ DEBUG [", name, "] ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━ ━")
-		if len(strArr) > 1 {
-			v := fmt.Sprintf("%v ┣ \t\t\t", time.Now().Format("2006-01-02 15:04:05"))
-			sql = strings.Replace(sql, strArr[len(strArr)-1], "\t"+strArr[len(strArr)-1], -1)
-			log.Println("┣ SQL：", strings.Replace(sql, "\t", v, -1))
-		} else {
-			log.Println("┣ SQL：", sql)
-		}
+		//if len(strArr) > 1 {
+		//	v := fmt.Sprintf("%v ┣ \t\t\t", time.Now().Format("2006-01-02 15:04:05"))
+		//	sql = strings.Replace(sql, strArr[len(strArr)-1], "\t"+strArr[len(strArr)-1], -1)
+		//	log.Println("┣ SQL：", strings.Replace(sql, "\t", v, -1))
+		//} else {
+		//	log.Println("┣ SQL：", sql)
+		//}
+		log.Println("┣ SQL：", strings.Replace(sql, "\n", "", -1))
 		log.Printf("┣ 参数：%v", strings.Replace(strings.Trim(fmt.Sprint(param...), "[]"), " ", " , ", -1))
 		log.Println("┣ 时间：", float64((endTime-startTime)/1e6), "ms")
 		log.Println("┣ 条数：", total, "条")
